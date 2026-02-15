@@ -43,7 +43,7 @@ router.get("/:username", async (req: Request, res: Response) => {
       cache.set(username.toLowerCase(), analysis);
     }
 
-    const options: CardOptions = { theme, width: 495, height: 440 };
+    const options: CardOptions = { theme, width: 495 };
     const svg = generateSvgCard(analysis, options);
     console.log(`[card] Generated SVG for "${username}" (${svg.length} bytes)`);
 

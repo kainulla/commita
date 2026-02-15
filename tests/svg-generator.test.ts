@@ -76,7 +76,6 @@ describe("generateSvgCard", () => {
     const svg = generateSvgCard(mockAnalysis(), {
       theme: "dark",
       width: 495,
-      height: 440,
     });
     expect(svg).toContain("#0d1117");
   });
@@ -85,7 +84,6 @@ describe("generateSvgCard", () => {
     const svg = generateSvgCard(mockAnalysis(), {
       theme: "light",
       width: 495,
-      height: 440,
     });
     expect(svg).toContain("#ffffff");
   });

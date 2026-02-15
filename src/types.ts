@@ -54,7 +54,6 @@ export interface CommitAnalysis {
 export interface CardOptions {
   theme: "light" | "dark";
   width: number;
-  height: number;
 }
 
 export interface CacheEntry<T> {
