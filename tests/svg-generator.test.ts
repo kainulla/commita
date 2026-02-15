@@ -65,7 +65,7 @@ describe("generateSvgCard", () => {
     expect(svg).toContain("7d");
   });
 
-  it("includes fun facts", () => {
+  it("includes interesting facts", () => {
     const svg = generateSvgCard(mockAnalysis());
     expect(svg).toContain("2025-03-10");
     expect(svg).toContain("Monday");

@@ -163,7 +163,7 @@ export function generateSvgCard(
 
   const dividerY = chartsY + dayBarsHeight + 16;
 
-  // Fun Facts
+  // Interesting Facts
   const factsHeaderY = dividerY + 20;
   const factsStartY = factsHeaderY + 18;
   const lineSpacing = 18;
@@ -231,8 +231,8 @@ export function generateSvgCard(
   <!-- Divider -->
   <line x1="${pad}" y1="${dividerY}" x2="${width - pad}" y2="${dividerY}" stroke="${theme.border}" stroke-width="0.5"/>
 
-  <!-- Fun Facts -->
-  <text x="${pad}" y="${factsHeaderY}" fill="${theme.title}" font-size="12" font-weight="600" font-family="'Segoe UI', Ubuntu, sans-serif">Fun Facts</text>
+  <!-- Interesting Facts -->
+  <text x="${pad}" y="${factsHeaderY}" fill="${theme.title}" font-size="12" font-weight="600" font-family="'Segoe UI', Ubuntu, sans-serif">Interesting Facts</text>
   ${busiestLine}
   ${peakLine}
   ${shortLine}
