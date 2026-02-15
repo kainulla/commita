@@ -165,7 +165,7 @@ export function generateSvgCard(
     <tspan font-weight="500" fill="${theme.accent}">Busiest day:</tspan> ${sanitizeSvgText(analysis.busiestDate)} (${analysis.busiestDateCount} commits)
   </text>
   <text x="25" y="360" fill="${theme.text}" font-size="11" font-family="'Segoe UI', Ubuntu, sans-serif">
-    <tspan font-weight="500" fill="${theme.accent}">Peak hour:</tspan> ${formatHour(analysis.mostProductiveHour)} UTC &middot; <tspan font-weight="500" fill="${theme.accent}">Fav day:</tspan> ${analysis.mostActiveDay}
+    <tspan font-weight="500" fill="${theme.accent}">Peak hour:</tspan> ${formatHour(analysis.mostProductiveHour)} UTC &#183; <tspan font-weight="500" fill="${theme.accent}">Fav day:</tspan> ${analysis.mostActiveDay}
   </text>
   <text x="25" y="380" fill="${theme.text}" font-size="11" font-family="'Segoe UI', Ubuntu, sans-serif">
     <tspan font-weight="500" fill="${theme.accent}">Shortest msg:</tspan> &quot;${shortestMsg}&quot;
