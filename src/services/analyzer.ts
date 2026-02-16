@@ -128,23 +128,25 @@ function analyzeMessages(commits: GitHubCommit[]): MessageInsights {
   if (commits.length === 0) {
     return {
       shortest: "",
+      shortestDate: "",
       longest: "",
+      longestDate: "",
       averageLength: 0,
       emojiCount: 0,
       topEmojis: [],
     };
   }
 
-  const messages = commits.map((c) => c.message);
-  let shortest = messages[0];
-  let longest = messages[0];
+  let shortest = commits[0];
+  let longest = commits[0];
   let totalLength = 0;
   const emojiCounts = new Map<string, number>();
 
-  for (const msg of messages) {
+  for (const commit of commits) {
+    const msg = commit.message;
     totalLength += msg.length;
-    if (msg.length < shortest.length) shortest = msg;
-    if (msg.length > longest.length) longest = msg;
+    if (msg.length < shortest.message.length) shortest = commit;
+    if (msg.length > longest.message.length) longest = commit;
 
     const emojis = msg.match(EMOJI_REGEX);
     if (emojis) {
@@ -165,9 +167,11 @@ function analyzeMessages(commits: GitHubCommit[]): MessageInsights {
   }
 
   return {
-    shortest,
-    longest,
-    averageLength: Math.round(totalLength / messages.length),
+    shortest: shortest.message,
+    shortestDate: shortest.date.slice(0, 10),
+    longest: longest.message,
+    longestDate: longest.date.slice(0, 10),
+    averageLength: Math.round(totalLength / commits.length),
     emojiCount: totalEmojiCount,
     topEmojis,
   };

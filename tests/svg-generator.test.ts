@@ -32,7 +32,9 @@ function mockAnalysis(): CommitAnalysis {
     },
     messageInsights: {
       shortest: "fix",
+      shortestDate: "2025-02-05",
       longest: "refactor authentication to support OAuth2 flow",
+      longestDate: "2025-03-01",
       averageLength: 28,
       emojiCount: 15,
       topEmojis: ["\u2728", "\ud83d\udc1b", "\ud83c\udf89"],

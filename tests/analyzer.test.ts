@@ -80,7 +80,7 @@ describe("analyzeCommits", () => {
     expect(result.messageInsights.shortest).toBe("");
   });
 
-  it("detects shortest and longest messages", () => {
+  it("detects shortest and longest messages with dates", () => {
     const commits = [
       makeCommit("2025-03-10T10:00:00Z", "fix"),
       makeCommit("2025-03-11T10:00:00Z", "refactor authentication module to support OAuth2"),
@@ -88,9 +88,11 @@ describe("analyzeCommits", () => {
     ];
     const result = analyzeCommits("user", commits, 1);
     expect(result.messageInsights.shortest).toBe("fix");
+    expect(result.messageInsights.shortestDate).toBe("2025-03-10");
     expect(result.messageInsights.longest).toBe(
       "refactor authentication module to support OAuth2"
     );
+    expect(result.messageInsights.longestDate).toBe("2025-03-11");
   });
 
   it("counts emojis in messages", () => {

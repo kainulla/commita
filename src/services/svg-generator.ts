@@ -175,10 +175,12 @@ export function generateSvgCard(
   const peakLine = `<text x="${pad}" y="${factsStartY + lineSpacing * factsLine}" fill="${theme.text}" font-size="11" font-family="'Segoe UI', Ubuntu, sans-serif"><tspan font-weight="500" fill="${theme.accent}">Peak hour:</tspan> ${formatHour(analysis.mostProductiveHour)} UTC &#183; <tspan font-weight="500" fill="${theme.accent}">Fav day:</tspan> ${analysis.mostActiveDay}</text>`;
   factsLine++;
 
-  const shortLine = `<text x="${pad}" y="${factsStartY + lineSpacing * factsLine}" fill="${theme.text}" font-size="11" font-family="'Segoe UI', Ubuntu, sans-serif"><tspan font-weight="500" fill="${theme.accent}">Shortest msg:</tspan> &quot;${shortestMsg}&quot;</text>`;
+  const shortestDate = sanitizeSvgText(analysis.messageInsights.shortestDate);
+  const shortLine = `<text x="${pad}" y="${factsStartY + lineSpacing * factsLine}" fill="${theme.text}" font-size="11" font-family="'Segoe UI', Ubuntu, sans-serif"><tspan font-weight="500" fill="${theme.accent}">Shortest msg:</tspan> &quot;${shortestMsg}&quot; <tspan fill="${theme.muted}" font-size="10">(${shortestDate})</tspan></text>`;
   factsLine++;
 
-  const longLine = `<text x="${pad}" y="${factsStartY + lineSpacing * factsLine}" fill="${theme.text}" font-size="11" font-family="'Segoe UI', Ubuntu, sans-serif"><tspan font-weight="500" fill="${theme.accent}">Longest msg:</tspan> &quot;${longestMsg}&quot;</text>`;
+  const longestDate = sanitizeSvgText(analysis.messageInsights.longestDate);
+  const longLine = `<text x="${pad}" y="${factsStartY + lineSpacing * factsLine}" fill="${theme.text}" font-size="11" font-family="'Segoe UI', Ubuntu, sans-serif"><tspan font-weight="500" fill="${theme.accent}">Longest msg:</tspan> &quot;${longestMsg}&quot; <tspan fill="${theme.muted}" font-size="10">(${longestDate})</tspan></text>`;
   factsLine++;
 
   let emojiLine = "";

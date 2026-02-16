@@ -31,7 +31,9 @@ export interface StreakInfo {
 
 export interface MessageInsights {
   shortest: string;
+  shortestDate: string;
   longest: string;
+  longestDate: string;
   averageLength: number;
   emojiCount: number;
   topEmojis: string[];
