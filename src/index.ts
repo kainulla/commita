@@ -34,8 +34,10 @@ app.get("/", (_req, res) => {
     .preview { margin-top: 1.5rem; width: 100%; max-width: 520px; overflow-x: auto; }
     .preview svg { width: 100%; height: auto; }
     .embed-box { margin-top: 1.5rem; background: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 1rem; width: 100%; max-width: 520px; display: none; }
-    .embed-box code { font-size: 0.85rem; color: #58a6ff; word-break: break-all; }
+    .embed-box code { font-size: 0.85rem; color: #58a6ff; word-break: break-all; display: block; margin-bottom: 0.75rem; }
     .embed-box p { margin-bottom: 0.5rem; color: #8b949e; font-size: 0.9rem; }
+    .copy-btn { padding: 0.4rem 0.75rem; font-size: 0.85rem; border: 1px solid #30363d; border-radius: 6px; background: #21262d; color: #c9d1d9; cursor: pointer; }
+    .copy-btn:hover { background: #30363d; }
     footer { margin-top: 3rem; color: #484f58; font-size: 0.85rem; }
     a { color: #58a6ff; text-decoration: none; }
     @media (max-width: 480px) {
@@ -57,6 +59,7 @@ app.get("/", (_req, res) => {
   <div class="embed-box" id="embed-box">
     <p>Add this to your GitHub README:</p>
     <code id="embed-code"></code>
+    <button class="copy-btn" onclick="copyEmbed()">Copy</button>
   </div>
   <footer><a href="https://github.com/commita">GitHub</a></footer>
   <script>
@@ -89,6 +92,14 @@ app.get("/", (_req, res) => {
           console.error('[Commita] Error:', err);
           p.innerHTML = '<p style="color:#f85149">' + err.message + '</p>';
         });
+    }
+    function copyEmbed() {
+      var code = document.getElementById('embed-code').textContent;
+      navigator.clipboard.writeText(code).then(function() {
+        var btn = document.querySelector('.copy-btn');
+        btn.textContent = 'Copied!';
+        setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
+      });
     }
     document.getElementById('username').addEventListener('keydown', function(e) { if (e.key === 'Enter') generate(); });
   </script>
