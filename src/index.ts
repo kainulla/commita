@@ -23,7 +23,8 @@ app.get("/", (_req, res) => {
   <title>Commita — GitHub Insights, Beautifully Visualized</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', -apple-system, sans-serif; background: #0d1117; color: #c9d1d9; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem 1rem; }
+    body { font-family: 'Segoe UI', -apple-system, sans-serif; background: #0d1117; color: #c9d1d9; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 1rem; }
+    main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; }
     h1 { font-size: 2.5rem; font-weight: 700; color: #f0f6fc; margin-bottom: 0.5rem; }
     .tagline { color: #8b949e; font-size: 1.1rem; margin-bottom: 2rem; text-align: center; }
     .search { display: flex; gap: 0.5rem; margin-bottom: 2rem; width: 100%; max-width: 400px; }
@@ -38,7 +39,7 @@ app.get("/", (_req, res) => {
     .embed-box p { margin-bottom: 0.5rem; color: #8b949e; font-size: 0.9rem; }
     .copy-btn { padding: 0.4rem 0.75rem; font-size: 0.85rem; border: 1px solid #30363d; border-radius: 6px; background: #21262d; color: #c9d1d9; cursor: pointer; }
     .copy-btn:hover { background: #30363d; }
-    footer { margin-top: 3rem; color: #484f58; font-size: 0.85rem; }
+    footer { padding: 1.5rem 0; color: #484f58; font-size: 0.85rem; }
     a { color: #58a6ff; text-decoration: none; }
     @media (max-width: 480px) {
       h1 { font-size: 2rem; }
@@ -49,19 +50,21 @@ app.get("/", (_req, res) => {
   </style>
 </head>
 <body>
-  <h1>Commita</h1>
-  <p class="tagline">Personal GitHub insights, beautifully visualized</p>
-  <div class="search">
-    <input id="username" type="text" placeholder="Enter GitHub username" />
-    <button onclick="generate()">Generate</button>
-  </div>
-  <div class="preview" id="preview"></div>
-  <div class="embed-box" id="embed-box">
-    <p>Add this to your GitHub README:</p>
-    <code id="embed-code"></code>
-    <button class="copy-btn" onclick="copyEmbed()">Copy</button>
-  </div>
-  <footer><a href="https://github.com/commita">GitHub</a></footer>
+  <main>
+    <h1>Commita</h1>
+    <p class="tagline">Personal GitHub insights, beautifully visualized</p>
+    <div class="search">
+      <input id="username" type="text" placeholder="Enter GitHub username" />
+      <button onclick="generate()">Generate</button>
+    </div>
+    <div class="preview" id="preview"></div>
+    <div class="embed-box" id="embed-box">
+      <p>Add this to your GitHub README:</p>
+      <code id="embed-code"></code>
+      <button class="copy-btn" onclick="copyEmbed()">Copy</button>
+    </div>
+  </main>
+  <footer><a href="https://github.com/kainulla/commita">GitHub</a></footer>
   <script>
     function generate() {
       var u = document.getElementById('username').value.trim();
