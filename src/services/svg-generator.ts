@@ -216,8 +216,7 @@ export function generateSvgCard(
   <rect width="${width}" height="${height}" rx="6" fill="${theme.bg}" stroke="${theme.border}" stroke-width="1"/>
 
   <!-- Title -->
-  <text x="${pad}" y="${titleY}" fill="${theme.title}" font-size="16" font-weight="700" font-family="'Segoe UI', Ubuntu, sans-serif">Commita</text>
-  <text x="${pad + 68}" y="${titleY}" fill="${theme.muted}" font-size="14" font-family="'Segoe UI', Ubuntu, sans-serif">@${username}</text>
+  <text x="${pad}" y="${titleY}" fill="${theme.title}" font-size="16" font-weight="700" font-family="'Segoe UI', Ubuntu, sans-serif">@${username}</text>
 
   <!-- Stats Row -->
   ${statsRow}
