@@ -3,11 +3,17 @@ import { fetchAllCommits } from "../services/github";
 import { analyzeCommits } from "../services/analyzer";
 import { generateSvgCard } from "../services/svg-generator";
 import { Cache } from "../utils/cache";
+import { getToken } from "../utils/token-store";
 import { CommitAnalysis, CardOptions } from "../types";
 
 const cache = new Cache<CommitAnalysis>(
   parseInt(process.env.CACHE_TTL || "3600", 10)
 );
+
+// Separate cache keys for public vs authenticated to avoid mixing data
+function cacheKey(username: string, authenticated: boolean): string {
+  return `${username.toLowerCase()}:${authenticated ? "auth" : "pub"}`;
+}
 
 const router = Router();
 
@@ -21,26 +27,32 @@ router.get("/:username", async (req: Request, res: Response) => {
   }
 
   try {
-    const cached = cache.get(username.toLowerCase());
-    let analysis = cached;
+    const userToken = getToken(username);
+    const isAuthenticated = !!userToken;
+    const key = cacheKey(username, isAuthenticated);
+
+    let analysis = cache.get(key);
 
     if (analysis) {
-      console.log(`[card] Cache hit for "${username}"`);
+      console.log(`[card] Cache hit for "${username}" (${isAuthenticated ? "auth" : "public"})`);
     } else {
-      console.log(`[card] Cache miss for "${username}", fetching from GitHub...`);
-      const { commits, reposScanned } = await fetchAllCommits(username);
+      console.log(`[card] Cache miss for "${username}", fetching from GitHub (${isAuthenticated ? "auth" : "public"})...`);
+      const { commits, reposScanned } = await fetchAllCommits(
+        username,
+        userToken || undefined
+      );
       console.log(`[card] Fetched ${commits.length} commits from ${reposScanned} repos`);
 
       if (commits.length === 0) {
         res
           .status(404)
           .type("text/plain")
-          .send("No public commits found for this user");
+          .send("No commits found for this user");
         return;
       }
 
       analysis = analyzeCommits(username, commits, reposScanned);
-      cache.set(username.toLowerCase(), analysis);
+      cache.set(key, analysis);
     }
 
     const options: CardOptions = { theme, width: 495 };
@@ -81,18 +93,23 @@ router.get("/:username/json", async (req: Request, res: Response) => {
   }
 
   try {
-    let analysis = cache.get(username.toLowerCase());
+    const userToken = getToken(username);
+    const key = cacheKey(username, !!userToken);
+    let analysis = cache.get(key);
 
     if (!analysis) {
-      const { commits, reposScanned } = await fetchAllCommits(username);
+      const { commits, reposScanned } = await fetchAllCommits(
+        username,
+        userToken || undefined
+      );
 
       if (commits.length === 0) {
-        res.status(404).json({ error: "No public commits found" });
+        res.status(404).json({ error: "No commits found" });
         return;
       }
 
       analysis = analyzeCommits(username, commits, reposScanned);
-      cache.set(username.toLowerCase(), analysis);
+      cache.set(key, analysis);
     }
 
     res.status(200).json(analysis);

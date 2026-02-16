@@ -1,4 +1,5 @@
 import express from "express";
+import authRouter from "./routes/auth";
 import cardRouter from "./routes/card";
 
 const app = express();
@@ -39,6 +40,11 @@ app.get("/", (_req, res) => {
     .embed-box p { margin-bottom: 0.5rem; color: #8b949e; font-size: 0.9rem; }
     .copy-btn { padding: 0.4rem 0.75rem; font-size: 0.85rem; border: 1px solid #30363d; border-radius: 6px; background: #21262d; color: #c9d1d9; cursor: pointer; }
     .copy-btn:hover { background: #30363d; }
+    .auth-section { margin-bottom: 1.5rem; text-align: center; }
+    .auth-btn { display: inline-block; padding: 0.5rem 1rem; font-size: 0.9rem; border: 1px solid #30363d; border-radius: 6px; background: #161b22; color: #c9d1d9; cursor: pointer; text-decoration: none; }
+    .auth-btn:hover { background: #21262d; border-color: #58a6ff; }
+    .auth-status { font-size: 0.85rem; color: #3fb950; margin-top: 0.5rem; }
+    .auth-disconnect { font-size: 0.8rem; color: #8b949e; cursor: pointer; background: none; border: none; text-decoration: underline; margin-left: 0.5rem; }
     footer { padding: 1.5rem 0; color: #484f58; font-size: 0.85rem; }
     a { color: #58a6ff; text-decoration: none; }
     @media (max-width: 480px) {
@@ -53,6 +59,9 @@ app.get("/", (_req, res) => {
   <main>
     <h1>Commita</h1>
     <p class="tagline">Personal GitHub insights, beautifully visualized</p>
+    <div class="auth-section" id="auth-section">
+      <a class="auth-btn" href="/auth/github">Connect GitHub for private repos</a>
+    </div>
     <div class="search">
       <input id="username" type="text" placeholder="Enter GitHub username" />
       <button onclick="generate()">Generate</button>
@@ -105,11 +114,38 @@ app.get("/", (_req, res) => {
       });
     }
     document.getElementById('username').addEventListener('keydown', function(e) { if (e.key === 'Enter') generate(); });
+    // Handle OAuth callback params
+    (function() {
+      var params = new URLSearchParams(location.search);
+      var auth = params.get('auth');
+      var user = params.get('user');
+      var section = document.getElementById('auth-section');
+      if (auth === 'success' && user) {
+        section.innerHTML = '<span class="auth-status">Connected as @' + user + ' (includes private repos)</span>' +
+          '<button class="auth-disconnect" onclick="disconnect(\'' + user + '\')">Disconnect</button>';
+        document.getElementById('username').value = user;
+        history.replaceState({}, '', '/');
+      } else if (auth === 'denied') {
+        section.innerHTML = '<a class="auth-btn" href="/auth/github">Connect GitHub for private repos</a>' +
+          '<p style="color:#f85149;font-size:0.85rem;margin-top:0.5rem">Authorization denied</p>';
+        history.replaceState({}, '', '/');
+      } else if (auth === 'error') {
+        section.innerHTML = '<a class="auth-btn" href="/auth/github">Connect GitHub for private repos</a>' +
+          '<p style="color:#f85149;font-size:0.85rem;margin-top:0.5rem">Authentication failed, try again</p>';
+        history.replaceState({}, '', '/');
+      }
+    })();
+    function disconnect(user) {
+      fetch('/auth/logout/' + encodeURIComponent(user), { method: 'POST' }).then(function() {
+        document.getElementById('auth-section').innerHTML = '<a class="auth-btn" href="/auth/github">Connect GitHub for private repos</a>';
+      });
+    }
   </script>
 </body>
 </html>`);
 });
 
+app.use("/auth", authRouter);
 app.use("/", cardRouter);
 
 app.listen(PORT, () => {

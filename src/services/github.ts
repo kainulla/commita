@@ -5,20 +5,21 @@ const PER_PAGE = 100;
 const MAX_REPOS = 50;
 const MAX_COMMITS_PER_REPO = 200;
 
-function headers(): Record<string, string> {
+function buildHeaders(token?: string): Record<string, string> {
   const h: Record<string, string> = {
     Accept: "application/vnd.github+json",
     "User-Agent": "Commita/1.0",
   };
-  if (process.env.GITHUB_TOKEN) {
-    h["Authorization"] = `Bearer ${process.env.GITHUB_TOKEN}`;
+  const authToken = token || process.env.GITHUB_TOKEN;
+  if (authToken) {
+    h["Authorization"] = `Bearer ${authToken}`;
   }
   return h;
 }
 
-async function githubFetch<T>(url: string): Promise<T> {
+async function githubFetch<T>(url: string, token?: string): Promise<T> {
   console.log(`[github] GET ${url.replace(GITHUB_API, "")}`);
-  const res = await fetch(url, { headers: headers() });
+  const res = await fetch(url, { headers: buildHeaders(token) });
   const remaining = res.headers.get("x-ratelimit-remaining");
   const limit = res.headers.get("x-ratelimit-limit");
   if (remaining) {
@@ -29,8 +30,8 @@ async function githubFetch<T>(url: string): Promise<T> {
     throw new Error("GitHub user not found");
   }
   if (res.status === 403) {
-    const remaining = res.headers.get("x-ratelimit-remaining");
-    if (remaining === "0") {
+    const rateLimitRemaining = res.headers.get("x-ratelimit-remaining");
+    if (rateLimitRemaining === "0") {
       const resetAt = res.headers.get("x-ratelimit-reset");
       const resetDate = resetAt
         ? new Date(parseInt(resetAt) * 1000).toISOString()
@@ -47,14 +48,26 @@ async function githubFetch<T>(url: string): Promise<T> {
 }
 
 export async function fetchUserRepos(
-  username: string
+  username: string,
+  token?: string
 ): Promise<GitHubRepo[]> {
   const allRepos: GitHubRepo[] = [];
   let page = 1;
 
+  // With a user token, use /user/repos to include private repos
+  const useAuthenticatedEndpoint = !!token;
+
   while (allRepos.length < MAX_REPOS) {
-    const url = `${GITHUB_API}/users/${encodeURIComponent(username)}/repos?per_page=${PER_PAGE}&page=${page}&sort=pushed&type=owner`;
-    const repos = await githubFetch<any[]>(url);
+    let url: string;
+    if (useAuthenticatedEndpoint) {
+      // Authenticated: fetch all repos the user owns (public + private)
+      url = `${GITHUB_API}/user/repos?per_page=${PER_PAGE}&page=${page}&sort=pushed&type=owner&affiliation=owner`;
+    } else {
+      // Unauthenticated: public repos only
+      url = `${GITHUB_API}/users/${encodeURIComponent(username)}/repos?per_page=${PER_PAGE}&page=${page}&sort=pushed&type=owner`;
+    }
+
+    const repos = await githubFetch<any[]>(url, token);
 
     if (repos.length === 0) break;
 
@@ -79,7 +92,8 @@ export async function fetchUserRepos(
 export async function fetchRepoCommits(
   owner: string,
   repo: string,
-  author: string
+  author: string,
+  token?: string
 ): Promise<GitHubCommit[]> {
   const commits: GitHubCommit[] = [];
   let page = 1;
@@ -89,7 +103,7 @@ export async function fetchRepoCommits(
 
     let batch: any[];
     try {
-      batch = await githubFetch<any[]>(url);
+      batch = await githubFetch<any[]>(url, token);
     } catch (err: any) {
       // Some repos may have empty history or restricted access
       if (err.message?.includes("409") || err.message?.includes("Git Repository is empty")) {
@@ -121,10 +135,12 @@ export async function fetchRepoCommits(
 }
 
 export async function fetchAllCommits(
-  username: string
+  username: string,
+  token?: string
 ): Promise<{ commits: GitHubCommit[]; reposScanned: number }> {
-  console.log(`[github] Fetching repos for "${username}"...`);
-  const repos = await fetchUserRepos(username);
+  const mode = token ? "authenticated (private+public)" : "public only";
+  console.log(`[github] Fetching repos for "${username}" [${mode}]...`);
+  const repos = await fetchUserRepos(username, token);
   console.log(`[github] Found ${repos.length} repos (excluding forks)`);
   const allCommits: GitHubCommit[] = [];
 
@@ -135,7 +151,7 @@ export async function fetchAllCommits(
     console.log(`[github] Fetching commits batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(repos.length / BATCH_SIZE)}: ${batch.map(r => r.name).join(", ")}`);
     const results = await Promise.allSettled(
       batch.map((repo) =>
-        fetchRepoCommits(username, repo.name, username)
+        fetchRepoCommits(username, repo.name, username, token)
       )
     );
 
