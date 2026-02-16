@@ -23,20 +23,27 @@ app.get("/", (_req, res) => {
   <title>Commita — GitHub Insights, Beautifully Visualized</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', -apple-system, sans-serif; background: #0d1117; color: #c9d1d9; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; }
+    body { font-family: 'Segoe UI', -apple-system, sans-serif; background: #0d1117; color: #c9d1d9; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem 1rem; }
     h1 { font-size: 2.5rem; font-weight: 700; color: #f0f6fc; margin-bottom: 0.5rem; }
-    .tagline { color: #8b949e; font-size: 1.1rem; margin-bottom: 2rem; }
-    .search { display: flex; gap: 0.5rem; margin-bottom: 2rem; }
-    input { padding: 0.75rem 1rem; font-size: 1rem; border: 1px solid #30363d; border-radius: 6px; background: #161b22; color: #c9d1d9; width: 280px; outline: none; }
+    .tagline { color: #8b949e; font-size: 1.1rem; margin-bottom: 2rem; text-align: center; }
+    .search { display: flex; gap: 0.5rem; margin-bottom: 2rem; width: 100%; max-width: 400px; }
+    input { padding: 0.75rem 1rem; font-size: 1rem; border: 1px solid #30363d; border-radius: 6px; background: #161b22; color: #c9d1d9; flex: 1; min-width: 0; outline: none; }
     input:focus { border-color: #58a6ff; }
-    button { padding: 0.75rem 1.5rem; font-size: 1rem; border: none; border-radius: 6px; background: #238636; color: #fff; cursor: pointer; font-weight: 600; }
+    button { padding: 0.75rem 1.5rem; font-size: 1rem; border: none; border-radius: 6px; background: #238636; color: #fff; cursor: pointer; font-weight: 600; white-space: nowrap; }
     button:hover { background: #2ea043; }
-    .preview { margin-top: 1.5rem; }
-    .embed-box { margin-top: 1.5rem; background: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 1rem; max-width: 500px; display: none; }
+    .preview { margin-top: 1.5rem; width: 100%; max-width: 520px; overflow-x: auto; }
+    .preview svg { width: 100%; height: auto; }
+    .embed-box { margin-top: 1.5rem; background: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 1rem; width: 100%; max-width: 520px; display: none; }
     .embed-box code { font-size: 0.85rem; color: #58a6ff; word-break: break-all; }
     .embed-box p { margin-bottom: 0.5rem; color: #8b949e; font-size: 0.9rem; }
     footer { margin-top: 3rem; color: #484f58; font-size: 0.85rem; }
     a { color: #58a6ff; text-decoration: none; }
+    @media (max-width: 480px) {
+      h1 { font-size: 2rem; }
+      .tagline { font-size: 0.95rem; }
+      .search { flex-direction: column; }
+      button { width: 100%; }
+    }
   </style>
 </head>
 <body>
