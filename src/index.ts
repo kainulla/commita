@@ -58,7 +58,7 @@ app.get("/", (_req, res) => {
     <p>Add this to your GitHub README:</p>
     <code id="embed-code"></code>
   </div>
-  <footer>Open source &middot; <a href="https://github.com/commita">GitHub</a></footer>
+  <footer><a href="https://github.com/commita">GitHub</a></footer>
   <script>
     function generate() {
       var u = document.getElementById('username').value.trim();
