@@ -11,9 +11,16 @@
     "test:watch": "vitest",
     "lint": "tsc --noEmit"
   },
-  "keywords": ["github", "commits", "insights", "svg", "developer-tools"],
+  "keywords": [
+    "github",
+    "commits",
+    "insights",
+    "svg",
+    "developer-tools"
+  ],
   "license": "MIT",
   "dependencies": {
+    "dotenv": "^17.3.1",
     "express": "^4.21.0"
   },
   "devDependencies": {

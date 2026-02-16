@@ -2,8 +2,15 @@ import { GitHubRepo, GitHubCommit } from "../types";
 
 const GITHUB_API = "https://api.github.com";
 const PER_PAGE = 100;
-const MAX_REPOS = 50;
-const MAX_COMMITS_PER_REPO = 200;
+
+// Public: 60 req/hour primary limit — stay conservative
+// Auth: 5000 req/hour primary, 900 req/min secondary limit
+const LIMITS = {
+  auth: { maxRepos: 200, maxCommitsPerRepo: 500 },
+  public: { maxRepos: 50, maxCommitsPerRepo: 200 },
+};
+// With batch size 5 and 500ms delay: ~10 req/sec = ~600 req/min (under 900 limit)
+const BATCH_DELAY_MS = 500;
 
 function buildHeaders(token?: string): Record<string, string> {
   const h: Record<string, string> = {
@@ -53,15 +60,16 @@ export async function fetchUserRepos(
 ): Promise<GitHubRepo[]> {
   const allRepos: GitHubRepo[] = [];
   let page = 1;
+  const maxRepos = token ? LIMITS.auth.maxRepos : LIMITS.public.maxRepos;
 
   // With a user token, use /user/repos to include private repos
   const useAuthenticatedEndpoint = !!token;
 
-  while (allRepos.length < MAX_REPOS) {
+  while (allRepos.length < maxRepos) {
     let url: string;
     if (useAuthenticatedEndpoint) {
       // Authenticated: fetch all repos the user owns (public + private)
-      url = `${GITHUB_API}/user/repos?per_page=${PER_PAGE}&page=${page}&sort=pushed&type=owner&affiliation=owner`;
+      url = `${GITHUB_API}/user/repos?per_page=${PER_PAGE}&page=${page}&sort=pushed&affiliation=owner`;
     } else {
       // Unauthenticated: public repos only
       url = `${GITHUB_API}/users/${encodeURIComponent(username)}/repos?per_page=${PER_PAGE}&page=${page}&sort=pushed&type=owner`;
@@ -72,7 +80,7 @@ export async function fetchUserRepos(
     if (repos.length === 0) break;
 
     for (const repo of repos) {
-      if (allRepos.length >= MAX_REPOS) break;
+      if (allRepos.length >= maxRepos) break;
       if (repo.fork) continue;
       allRepos.push({
         name: repo.name,
@@ -97,8 +105,9 @@ export async function fetchRepoCommits(
 ): Promise<GitHubCommit[]> {
   const commits: GitHubCommit[] = [];
   let page = 1;
+  const maxCommits = token ? LIMITS.auth.maxCommitsPerRepo : LIMITS.public.maxCommitsPerRepo;
 
-  while (commits.length < MAX_COMMITS_PER_REPO) {
+  while (commits.length < maxCommits) {
     const url = `${GITHUB_API}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/commits?author=${encodeURIComponent(author)}&per_page=${PER_PAGE}&page=${page}`;
 
     let batch: any[];
@@ -115,7 +124,7 @@ export async function fetchRepoCommits(
     if (batch.length === 0) break;
 
     for (const item of batch) {
-      if (commits.length >= MAX_COMMITS_PER_REPO) break;
+      if (commits.length >= maxCommits) break;
       const commitData = item.commit;
       if (!commitData?.author?.date) continue;
 
@@ -161,6 +170,11 @@ export async function fetchAllCommits(
       } else {
         console.warn(`[github] Failed to fetch commits:`, result.reason?.message);
       }
+    }
+
+    // Throttle between batches to stay under 900 req/min secondary limit
+    if (i + BATCH_SIZE < repos.length) {
+      await new Promise((r) => setTimeout(r, BATCH_DELAY_MS));
     }
   }
 
