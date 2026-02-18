@@ -63,7 +63,9 @@ router.get("/:username", async (req: Request, res: Response) => {
       .status(200)
       .set({
         "Content-Type": "image/svg+xml",
-        "Cache-Control": "public, max-age=3600",
+        "Cache-Control": isAuthenticated
+          ? "private, no-cache"
+          : "public, max-age=3600",
       })
       .send(svg);
   } catch (err: any) {

@@ -88,7 +88,7 @@ app.get("/", (_req, res) => {
       var box = document.getElementById('embed-box');
       box.style.display = 'none';
       p.innerHTML = '<p style="color:#8b949e">Generating card for @' + u + '...</p>';
-      var url = '/' + encodeURIComponent(u) + '?theme=dark';
+      var url = '/' + encodeURIComponent(u) + '?theme=dark' + (authenticated ? '&t=' + Date.now() : '');
       fetch(url)
         .then(function(res) {
           if (!res.ok) {
