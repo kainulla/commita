@@ -19,13 +19,20 @@ const router = Router();
 router.get("/github", (_req: Request, res: Response) => {
   try {
     const state = generateState();
-    storeState(state);
+    storeState(state).catch((err) =>
+      console.error("[auth] Failed to store state:", err)
+    );
     const url = getAuthorizationUrl(state);
     console.log(`[auth] Redirecting to GitHub OAuth`);
     res.redirect(url);
   } catch (err: any) {
     console.error(`[auth] Failed to start OAuth:`, err.message);
-    res.status(500).type("text/plain").send("OAuth not configured. Set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET.");
+    res
+      .status(500)
+      .type("text/plain")
+      .send(
+        "OAuth not configured. Set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET."
+      );
   }
 });
 
@@ -46,8 +53,11 @@ router.get("/callback", async (req: Request, res: Response) => {
     return;
   }
 
-  if (!validateAndConsumeState(state)) {
-    res.status(403).type("text/plain").send("Invalid or expired state. Please try again.");
+  if (!(await validateAndConsumeState(state))) {
+    res
+      .status(403)
+      .type("text/plain")
+      .send("Invalid or expired state. Please try again.");
     return;
   }
 
@@ -55,7 +65,7 @@ router.get("/callback", async (req: Request, res: Response) => {
     const { accessToken, scope } = await exchangeCodeForToken(code);
     const username = await fetchAuthenticatedUser(accessToken);
 
-    storeToken(username, {
+    await storeToken(username, {
       accessToken,
       scope,
       connectedAt: Date.now(),
@@ -70,15 +80,15 @@ router.get("/callback", async (req: Request, res: Response) => {
 });
 
 // Check if a user has connected their account
-router.get("/status/:username", (req: Request, res: Response) => {
+router.get("/status/:username", async (req: Request, res: Response) => {
   const username = req.params.username as string;
-  res.json({ connected: hasToken(username) });
+  res.json({ connected: await hasToken(username) });
 });
 
 // Disconnect (remove stored token)
-router.post("/logout/:username", (req: Request, res: Response) => {
+router.post("/logout/:username", async (req: Request, res: Response) => {
   const username = req.params.username as string;
-  removeToken(username);
+  await removeToken(username);
   res.json({ disconnected: true });
 });
 
