@@ -16,12 +16,10 @@ import {
 const router = Router();
 
 // Redirect user to GitHub OAuth
-router.get("/github", (_req: Request, res: Response) => {
+router.get("/github", async (_req: Request, res: Response) => {
   try {
     const state = generateState();
-    storeState(state).catch((err) =>
-      console.error("[auth] Failed to store state:", err)
-    );
+    await storeState(state); // must await — redirect happens before state is written otherwise
     const url = getAuthorizationUrl(state);
     console.log(`[auth] Redirecting to GitHub OAuth`);
     res.redirect(url);
@@ -53,15 +51,15 @@ router.get("/callback", async (req: Request, res: Response) => {
     return;
   }
 
-  if (!(await validateAndConsumeState(state))) {
-    res
-      .status(403)
-      .type("text/plain")
-      .send("Invalid or expired state. Please try again.");
-    return;
-  }
-
   try {
+    if (!(await validateAndConsumeState(state))) {
+      res
+        .status(403)
+        .type("text/plain")
+        .send("Invalid or expired state. Please try again.");
+      return;
+    }
+
     const { accessToken, scope } = await exchangeCodeForToken(code);
     const username = await fetchAuthenticatedUser(accessToken);
 
