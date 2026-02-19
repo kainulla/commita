@@ -26,8 +26,11 @@ router.get("/:username", async (req: Request, res: Response) => {
     return;
   }
 
+  // ?public=1 means the user explicitly wants public-only data (ignore stored token)
+  const forcePublic = req.query.public === "1";
+
   try {
-    const userToken = await getToken(username);
+    const userToken = forcePublic ? null : await getToken(username);
     const isAuthenticated = !!userToken;
     const key = cacheKey(username, isAuthenticated);
 
@@ -94,8 +97,10 @@ router.get("/:username/json", async (req: Request, res: Response) => {
     return;
   }
 
+  const forcePublicJson = req.query.public === "1";
+
   try {
-    const userToken = await getToken(username);
+    const userToken = forcePublicJson ? null : await getToken(username);
     const key = cacheKey(username, !!userToken);
     let analysis = cache.get(key);
 
