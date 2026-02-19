@@ -76,10 +76,11 @@ app.get("/", (_req, res) => {
       <button class="copy-btn" onclick="copyEmbed()">Copy</button>
     </div>
   </main>
-  <footer><a href="https://github.com/kainulla/commita">GitHub</a></footer>
+  <footer><a href="https://commita-eta.vercel.app">commita-eta.vercel.app</a></footer>
   <script>
     var authenticated = false;
     var authUser = null;
+    var includePrivate = false;
 
     function generate() {
       var u = document.getElementById('username').value.trim();
@@ -88,7 +89,13 @@ app.get("/", (_req, res) => {
       var box = document.getElementById('embed-box');
       box.style.display = 'none';
       p.innerHTML = '<p style="color:#8b949e">Generating card for @' + u + '...</p>';
-      var url = '/' + encodeURIComponent(u) + '?theme=dark' + (authenticated ? '&t=' + Date.now() : '');
+      var params = '?theme=dark';
+      if (authenticated && includePrivate) {
+        params += '&t=' + Date.now(); // cache-bust for private data
+      } else {
+        params += '&public=1'; // explicitly request public-only
+      }
+      var url = '/' + encodeURIComponent(u) + params;
       fetch(url)
         .then(function(res) {
           if (!res.ok) {
@@ -101,7 +108,9 @@ app.get("/", (_req, res) => {
           var svgEl = p.querySelector('svg');
           if (svgEl) svgEl.style.maxWidth = '100%';
           box.style.display = 'block';
-          document.getElementById('embed-code').textContent = '![Commita](' + location.origin + url + ')';
+          // Embed code always uses public URL (no auth token, no cache-busting)
+          var embedUrl = '/' + encodeURIComponent(u) + '?theme=dark';
+          document.getElementById('embed-code').textContent = '![Commita](' + location.origin + embedUrl + ')';
         })
         .catch(function(err) {
           p.innerHTML = '<p style="color:#f85149">' + err.message + '</p>';
@@ -109,9 +118,15 @@ app.get("/", (_req, res) => {
     }
 
     function handlePrivateToggle(cb) {
-      if (cb.checked && !authenticated) {
-        cb.checked = false;
-        window.location.href = '/auth/github';
+      if (cb.checked) {
+        if (!authenticated) {
+          cb.checked = false;
+          window.location.href = '/auth/github';
+        } else {
+          includePrivate = true;
+        }
+      } else {
+        includePrivate = false;
       }
     }
 
@@ -120,8 +135,7 @@ app.get("/", (_req, res) => {
       fetch('/auth/logout/' + encodeURIComponent(authUser), { method: 'POST' }).then(function() {
         authenticated = false;
         authUser = null;
-        var cb = document.getElementById('private-check');
-        cb.checked = false;
+        includePrivate = false;
         var opts = document.getElementById('options');
         opts.innerHTML = '<label><input type="checkbox" id="private-check" onchange="handlePrivateToggle(this)" /> Include private repos</label>';
       });
@@ -130,8 +144,7 @@ app.get("/", (_req, res) => {
     function setAuthenticated(user) {
       authenticated = true;
       authUser = user;
-      var cb = document.getElementById('private-check');
-      cb.checked = true;
+      includePrivate = true;
       var opts = document.getElementById('options');
       opts.innerHTML = '<label><input type="checkbox" id="private-check" checked onchange="handlePrivateToggle(this)" /> Include private repos</label>' +
         '<span class="auth-info">Connected as @' + user + '<button onclick="disconnect()">Disconnect</button></span>';
