@@ -26,22 +26,17 @@ router.get("/:username", async (req: Request, res: Response) => {
     return;
   }
 
-  // Default to public (cacheable) path. Only use auth when explicitly requested
-  // via ?private=1 (from the website). External embeds (GitHub camo) should always
-  // hit the public cached path.
-  const usePrivate = req.query.private === "1";
-
   try {
-    const userToken = usePrivate ? await getToken(username) : null;
-    const isAuthenticated = !!userToken;
-    const key = cacheKey(username, isAuthenticated);
+    const userToken = await getToken(username);
+    const hasToken = !!userToken;
+    const key = cacheKey(username, hasToken);
 
     let analysis = await cache.get(key);
 
     if (analysis) {
-      console.log(`[card] Cache hit for "${username}" (${isAuthenticated ? "auth" : "public"})`);
+      console.log(`[card] Cache hit for "${username}" (${hasToken ? "auth" : "public"})`);
     } else {
-      console.log(`[card] Cache miss for "${username}", fetching from GitHub (${isAuthenticated ? "auth" : "public"})...`);
+      console.log(`[card] Cache miss for "${username}", fetching from GitHub (${hasToken ? "auth" : "public"})...`);
       const { commits, reposScanned } = await fetchAllCommits(
         username,
         userToken || undefined
@@ -68,9 +63,7 @@ router.get("/:username", async (req: Request, res: Response) => {
       .status(200)
       .set({
         "Content-Type": "image/svg+xml",
-        "Cache-Control": isAuthenticated
-          ? "private, no-cache"
-          : "public, s-maxage=86400, stale-while-revalidate=604800, max-age=3600",
+        "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=604800, max-age=3600",
       })
       .send(svg);
   } catch (err: any) {
@@ -99,10 +92,8 @@ router.get("/:username/json", async (req: Request, res: Response) => {
     return;
   }
 
-  const usePrivateJson = req.query.private === "1";
-
   try {
-    const userToken = usePrivateJson ? await getToken(username) : null;
+    const userToken = await getToken(username);
     const key = cacheKey(username, !!userToken);
     let analysis = await cache.get(key);
 
