@@ -79,7 +79,7 @@ Commita transforms raw commit data into meaningful, shareable visual insights â€
 | ID | Requirement | Priority |
 |----|-------------|----------|
 | F-601 | Provide a copy-paste embed snippet for GitHub READMEs | Must Have |
-| F-602 | Card accessible via a stable URL (e.g., `commita.dev/<username>`) | Must Have |
+| F-602 | Card accessible via a stable URL (e.g., `commita-eta.vercel.app/<username>`) | Must Have |
 | F-603 | Support embedding in portfolio websites | Should Have |
 
 ---
@@ -132,7 +132,7 @@ Commita transforms raw commit data into meaningful, shareable visual insights â€
 ## 5. User Flow
 
 ```
-1. User visits commita.dev (or uses API directly)
+1. User visits commita-eta.vercel.app (or uses API directly)
 2. User enters their GitHub username
 3. System fetches public repos and commit history via GitHub API
 4. System analyzes commit patterns, streaks, and messages

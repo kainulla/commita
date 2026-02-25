@@ -241,6 +241,6 @@ export function generateSvgCard(
   ${emojiLine}
 
   <!-- Footer -->
-  <text x="${width - pad}" y="${height - 10}" fill="${theme.muted}" font-size="9" font-family="'Segoe UI', Ubuntu, sans-serif" text-anchor="end">commita.dev</text>
+  <text x="${width - pad}" y="${height - 10}" fill="${theme.muted}" font-size="9" font-family="'Segoe UI', Ubuntu, sans-serif" text-anchor="end">commita-eta.vercel.app</text>
 </svg>`;
 }
