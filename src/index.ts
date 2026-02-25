@@ -76,7 +76,7 @@ app.get("/", (_req, res) => {
       <button class="copy-btn" onclick="copyEmbed()">Copy</button>
     </div>
   </main>
-  <footer><a href="https://commita-eta.vercel.app">commita-eta.vercel.app</a></footer>
+  <footer><a href="https://github.com/kainulla/commita">GitHub</a></footer>
   <script>
     var authenticated = false;
     var authUser = null;
