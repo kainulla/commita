@@ -7,7 +7,7 @@ import { getToken } from "../utils/token-store";
 import { CommitAnalysis, CardOptions } from "../types";
 
 const cache = new Cache<CommitAnalysis>(
-  parseInt(process.env.CACHE_TTL || "3600", 10)
+  parseInt(process.env.CACHE_TTL || "86400", 10)
 );
 
 // Separate cache keys for public vs authenticated to avoid mixing data
@@ -34,7 +34,7 @@ router.get("/:username", async (req: Request, res: Response) => {
     const isAuthenticated = !!userToken;
     const key = cacheKey(username, isAuthenticated);
 
-    let analysis = cache.get(key);
+    let analysis = await cache.get(key);
 
     if (analysis) {
       console.log(`[card] Cache hit for "${username}" (${isAuthenticated ? "auth" : "public"})`);
@@ -55,7 +55,7 @@ router.get("/:username", async (req: Request, res: Response) => {
       }
 
       analysis = analyzeCommits(username, commits, reposScanned);
-      cache.set(key, analysis);
+      await cache.set(key, analysis);
     }
 
     const options: CardOptions = { theme, width: 495 };
@@ -68,7 +68,7 @@ router.get("/:username", async (req: Request, res: Response) => {
         "Content-Type": "image/svg+xml",
         "Cache-Control": isAuthenticated
           ? "private, no-cache"
-          : "public, max-age=3600",
+          : "public, s-maxage=86400, stale-while-revalidate=604800, max-age=3600",
       })
       .send(svg);
   } catch (err: any) {
@@ -102,7 +102,7 @@ router.get("/:username/json", async (req: Request, res: Response) => {
   try {
     const userToken = forcePublicJson ? null : await getToken(username);
     const key = cacheKey(username, !!userToken);
-    let analysis = cache.get(key);
+    let analysis = await cache.get(key);
 
     if (!analysis) {
       const { commits, reposScanned } = await fetchAllCommits(
@@ -116,7 +116,7 @@ router.get("/:username/json", async (req: Request, res: Response) => {
       }
 
       analysis = analyzeCommits(username, commits, reposScanned);
-      cache.set(key, analysis);
+      await cache.set(key, analysis);
     }
 
     res.status(200).json(analysis);

@@ -1,35 +1,20 @@
-import { CacheEntry } from "../types";
+import { redis } from "./redis";
+
+const CACHE_PREFIX = "cache:";
 
 export class Cache<T> {
-  private store = new Map<string, CacheEntry<T>>();
-  private ttlMs: number;
+  private ttlSeconds: number;
 
   constructor(ttlSeconds: number = 3600) {
-    this.ttlMs = ttlSeconds * 1000;
+    this.ttlSeconds = ttlSeconds;
   }
 
-  get(key: string): T | null {
-    const entry = this.store.get(key);
-    if (!entry) return null;
-    if (Date.now() > entry.expiresAt) {
-      this.store.delete(key);
-      return null;
-    }
-    return entry.data;
+  async get(key: string): Promise<T | null> {
+    const data = await redis.get<T>(`${CACHE_PREFIX}${key}`);
+    return data ?? null;
   }
 
-  set(key: string, data: T): void {
-    this.store.set(key, {
-      data,
-      expiresAt: Date.now() + this.ttlMs,
-    });
-  }
-
-  clear(): void {
-    this.store.clear();
-  }
-
-  get size(): number {
-    return this.store.size;
+  async set(key: string, data: T): Promise<void> {
+    await redis.set(`${CACHE_PREFIX}${key}`, data, { ex: this.ttlSeconds });
   }
 }

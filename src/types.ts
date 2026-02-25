@@ -58,11 +58,6 @@ export interface CardOptions {
   width: number;
 }
 
-export interface CacheEntry<T> {
-  data: T;
-  expiresAt: number;
-}
-
 export interface OAuthTokenEntry {
   accessToken: string;
   scope: string;
