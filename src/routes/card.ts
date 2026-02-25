@@ -26,11 +26,13 @@ router.get("/:username", async (req: Request, res: Response) => {
     return;
   }
 
-  // ?public=1 means the user explicitly wants public-only data (ignore stored token)
-  const forcePublic = req.query.public === "1";
+  // Default to public (cacheable) path. Only use auth when explicitly requested
+  // via ?private=1 (from the website). External embeds (GitHub camo) should always
+  // hit the public cached path.
+  const usePrivate = req.query.private === "1";
 
   try {
-    const userToken = forcePublic ? null : await getToken(username);
+    const userToken = usePrivate ? await getToken(username) : null;
     const isAuthenticated = !!userToken;
     const key = cacheKey(username, isAuthenticated);
 
@@ -97,10 +99,10 @@ router.get("/:username/json", async (req: Request, res: Response) => {
     return;
   }
 
-  const forcePublicJson = req.query.public === "1";
+  const usePrivateJson = req.query.private === "1";
 
   try {
-    const userToken = forcePublicJson ? null : await getToken(username);
+    const userToken = usePrivateJson ? await getToken(username) : null;
     const key = cacheKey(username, !!userToken);
     let analysis = await cache.get(key);
 

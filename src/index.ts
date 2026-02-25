@@ -91,9 +91,7 @@ app.get("/", (_req, res) => {
       p.innerHTML = '<p style="color:#8b949e">Generating card for @' + u + '...</p>';
       var params = '?theme=dark';
       if (authenticated && includePrivate) {
-        params += '&t=' + Date.now(); // cache-bust for private data
-      } else {
-        params += '&public=1'; // explicitly request public-only
+        params += '&private=1&t=' + Date.now(); // cache-bust for private data
       }
       var url = '/' + encodeURIComponent(u) + params;
       fetch(url)
